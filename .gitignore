@@ -1,0 +1,7 @@
+config.mk
+depend
+graph.pdf
+main
+*.d
+*.o
+.dummy.mk
