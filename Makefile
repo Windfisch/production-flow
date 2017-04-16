@@ -59,7 +59,8 @@ run: $(EXE)
 	./$(EXE)
 
 graph.pdf: $(EXE)
-	./$(EXE) | dot -Tps2 | ps2pdf - >$@
+	#./$(EXE) | dot -Tps2 | ps2pdf - >$@
+	./$(EXE) | dot -Tpdf  | csplit --quiet --elide-empty-files --prefix=tmpfile - "/%%EOF/+1" "{*}" && pdfunite tmpfile* $@ && rm tmpfile*
 
 # Build system
 
