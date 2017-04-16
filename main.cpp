@@ -195,20 +195,44 @@ int main()
 
 	graph.nodes.emplace_back(10.);
 	graph.nodes.emplace_back(20.);
-	graph.nodes.emplace_back(-1.);
-	graph.nodes.emplace_back(-24);
-	graph.nodes.emplace_back(-3);
+	graph.nodes.emplace_back(25.);
+	//graph.nodes.emplace_back(20.);
+	graph.nodes.emplace_back(15.);
 
-	graph.edges.emplace_back(0,2, 50.);
-	graph.edges.emplace_back(0,3, 50.);
-	graph.edges.emplace_back(1,3, 50.);
-	graph.edges.emplace_back(3,4, 50.);
+	graph.nodes.emplace_back(-2.);
+	graph.nodes.emplace_back(0);
+	graph.nodes.emplace_back(-24);
+	graph.nodes.emplace_back(-2);
+	graph.nodes.emplace_back(-4);
+	graph.nodes.emplace_back(-3);
+	graph.nodes.emplace_back(0);
+	graph.nodes.emplace_back(0);
+	graph.nodes.emplace_back(-8);
+	graph.nodes.emplace_back(-7);
+	graph.nodes.emplace_back(-14);
+	
+	graph.edges.emplace_back(0,4, 50.);
+	graph.edges.emplace_back(4,5, 50.);
+	graph.edges.emplace_back(1,5, 50.);
+	graph.edges.emplace_back(5,6, 50.);
+	graph.edges.emplace_back(6,7, 50.);
+	graph.edges.emplace_back(7,11, 50.);
+	
+	graph.edges.emplace_back(2,8, 50.);
+	graph.edges.emplace_back(2,9, 50.);
+	graph.edges.emplace_back(8,10, 50.);
+	graph.edges.emplace_back(10,11, 50.);
+	
+	graph.edges.emplace_back(11,12, 50.);
+	graph.edges.emplace_back(11,13, 50.);
+	graph.edges.emplace_back(11,14, 50.);
+	graph.edges.emplace_back(3,14, 50.);
 
 	graph.build();
 
 	graph.dump("initial");
 
-	for (int i=0; i<5; i++)
+	for (int i=0; i<20; i++)
 	{
 		for (auto& node : graph.nodes)
 		{
