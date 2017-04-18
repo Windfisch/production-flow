@@ -65,7 +65,7 @@ graph.pdf: $(EXE)
 # Build system
 
 config.mk:
-	echo 'COMPILER=GCC  # possible values: GCC, clang' >> $@
+	echo -e '# possible values: GCC, clang\nCOMPILER=GCC' >> $@
 
 include depend
 
