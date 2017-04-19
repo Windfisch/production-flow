@@ -1,250 +1,64 @@
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <vector>
-#include <map>
-#include <sstream>
-#include <assert.h>
+#include <cassert>
+
+#include "factory.hpp"
+#include "flowgraph.hpp"
 
 using namespace std;
 
 
-template <typename T>
-std::string str(const T a_value, const int n = 3)
-{
-    std::ostringstream out;
-    out << std::setprecision(n) << a_value;
-    return out.str();
-}
-
-struct Edge
-{
-	Edge(int from_, int to_, double cap) : from(from_), to(to_), capacity(cap), actual_capacity(cap) {}
-	int from;
-	int to;
-	double capacity;
-	double actual_capacity;
-	double actual_flow = 0.;
-
-	string label() const
-	{
-		string color;
-		if (actual_flow > actual_capacity)
-			color = "color=red,";
-		string label = "label=\""s + str(actual_flow) + "/"s + str(actual_capacity) + "("s+str(capacity)+")\""s;
-		return color+label;
-	}
-};
-
-struct Node
-{
-	Node(double max_prod) : max_production(max_prod) {}
-
-	double max_production; // negative production = consumption, zero = splitter
-	double actual_production = 0.;
-	double excess = 0.;
-
-	vector<Edge*> incoming_edges;
-	vector<Edge*> outgoing_edges; // max capacity on outgoing = splitter speed.
-
-	string label() const
-	{
-		string color;
-		if (incoming() < -max_production)
-			color = "color=red,";
-		else if (excess > 0)
-			color = "color=blue,";
-		string label("label=\""s + str(incoming())+"in, "s + str(actual_production)+"/"s+str(max_production)+"prod\\n"s + str(available()) + "avail, "s +  str(excess)+"exc\""s);
-		return color+label;
-	}
-
-	double incoming() const
-	{
-		double result = 0.;
-
-		for (Edge* edge : incoming_edges)
-			result += edge->actual_flow;
-
-		return result;
-	}
-
-	double available() const // amount available for pushing out
-	{
-		return max(0., incoming() + actual_production);
-	}
-
-	void update_forward()
-	{
-		if (max_production > 0.)
-			actual_production = max_production;
-		else
-			actual_production = -min(incoming(), -max_production); // never consume more than incoming
-	}
-
-	void update_backward()
-	{
-		if (excess <= 0.)
-			return;
-
-		double amount = incoming() - excess;
-
-		multimap<double, Edge*> sorted_edges;
-		for (Edge* edge : incoming_edges)
-			sorted_edges.insert( std::pair<double, Edge*>(edge->actual_flow, edge) );
-
-		size_t edges_remaining = sorted_edges.size();
-		double amount_remaining = amount;
-
-		for (auto& it : sorted_edges)
-		{
-			Edge* edge = it.second;
-			auto capacity = it.first;
-
-			double fair_share = amount_remaining / edges_remaining;
-			if (fair_share < capacity)
-				edge->actual_capacity = fair_share;
-			else
-			{
-				edge->actual_capacity = capacity; // set edge flow to maximum possible value
-				amount_remaining -= capacity; // the remaining amount must now be shared over even less edges
-				edges_remaining--;
-			}
-
-			assert(amount_remaining >= 0.);
-		}
-
-		assert(edges_remaining > 0);
-	}
-
-	void shove_out(double amount) // try to output. will update outgoing_edges.*->actual_flow and this->excess
-	{
-		multimap<double, Edge*> sorted_edges;
-		for (Edge* edge : outgoing_edges)
-			sorted_edges.insert( std::pair<double, Edge*>(edge->actual_capacity, edge) );
-
-		size_t edges_remaining = sorted_edges.size();
-		double amount_remaining = amount;
-
-		for (auto& it : sorted_edges)
-		{
-			Edge* edge = it.second;
-			auto capacity = it.first;
-
-			double fair_share = amount_remaining / edges_remaining;
-			if (fair_share < capacity)
-				edge->actual_flow = fair_share;
-			else
-			{
-				edge->actual_flow = capacity; // set edge flow to maximum possible value
-				amount_remaining -= capacity; // the remaining amount must now be shared over even less edges
-				edges_remaining--;
-			}
-
-			assert(amount_remaining >= 0.);
-		}
-
-		if (edges_remaining == 0)
-		{
-			excess = amount_remaining;
-			if (actual_production > 0.)
-			{
-				double reduction = min(excess, actual_production);
-				actual_production -= reduction;
-				excess -= reduction;
-			}
-		}
-		else
-			excess = 0.;
-	}
-
-};
-
-struct Graph
-{
-	vector<Node> nodes;
-	vector<Edge> edges;
-
-	void build()
-	{
-		for (auto& edge : edges)
-		{
-			nodes[edge.from].outgoing_edges.push_back(&edge);
-			nodes[edge.to].incoming_edges.push_back(&edge);
-		}
-	}
-
-	void dump(string name)
-	{
-		cout << "digraph \""<<name<<"\" {" << endl;
-
-		for (size_t i=0; i<nodes.size(); i++)
-			cout << "\t" << i << " [" << nodes[i].label() << "];" << endl;
-
-		cout << endl;
-
-		for (Edge& edge : edges)
-			cout << "\t" << edge.from << " -> " << edge.to << " [" << edge.label() << "];" << endl;
-
-		cout << "}" << endl;
-	}
-};
-
 int main()
 {
-	Graph graph;
+	Factory factory;
 
-	graph.nodes.emplace_back(10.);
-	graph.nodes.emplace_back(20.);
-	graph.nodes.emplace_back(25.);
-	//graph.nodes.emplace_back(20.);
-	graph.nodes.emplace_back(15.);
+	typedef vector<Factory::FacilityConfiguration> fcv;
+	typedef vector<Factory::TransportLineConfiguration> tcv;
 
-	graph.nodes.emplace_back(-2.);
-	graph.nodes.emplace_back(0);
-	graph.nodes.emplace_back(-24);
-	graph.nodes.emplace_back(-2);
-	graph.nodes.emplace_back(-4);
-	graph.nodes.emplace_back(-3);
-	graph.nodes.emplace_back(0);
-	graph.nodes.emplace_back(0);
-	graph.nodes.emplace_back(-8);
-	graph.nodes.emplace_back(-7);
-	graph.nodes.emplace_back(-14);
-	
-	graph.edges.emplace_back(0,4, 50.);
-	graph.edges.emplace_back(4,5, 50.);
-	graph.edges.emplace_back(1,5, 50.);
-	graph.edges.emplace_back(5,6, 50.);
-	graph.edges.emplace_back(6,7, 50.);
-	graph.edges.emplace_back(7,11, 50.);
-	
-	graph.edges.emplace_back(2,8, 50.);
-	graph.edges.emplace_back(2,9, 50.);
-	graph.edges.emplace_back(8,10, 50.);
-	graph.edges.emplace_back(10,11, 50.);
-	
-	graph.edges.emplace_back(11,12, 50.);
-	graph.edges.emplace_back(11,13, 50.);
-	graph.edges.emplace_back(11,14, 50.);
-	graph.edges.emplace_back(3,14, 50.);
+	factory.facilities.emplace_back(fcv{ {{{COAL, 10.}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, 20.}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, 25.}}, 1.}  }); // was: 20.
+	factory.facilities.emplace_back(fcv{ {{{COAL, 15.}}, 1.}  });
 
-	graph.build();
+	factory.facilities.emplace_back(fcv{ {{{COAL, -2.}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, 0}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, -24}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, -2}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, -4}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, -3}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, 0}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, 0}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, -8}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, -7}}, 1.}  });
+	factory.facilities.emplace_back(fcv{ {{{COAL, -14}}, 1.}  });
+	
+	factory.transport_lines.emplace_back(COAL, 0,4,   tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 4,5,   tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 1,5,   tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 5,6,   tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 6,7,   tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 7,11,  tcv{ {50., 1.} });
+	
+	factory.transport_lines.emplace_back(COAL, 2,8,   tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 2,9,   tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 8,10,  tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 10,11, tcv{ {50., 1.} });
+	
+	factory.transport_lines.emplace_back(COAL, 11,12, tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 11,13, tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 11,14, tcv{ {50., 1.} });
+	factory.transport_lines.emplace_back(COAL, 3,14,  tcv{ {50., 1.} });
+
+	factory.initialize();
+
+	Factory::FactoryConfiguration conf;
+	for (auto& facility : factory.facilities)
+		conf.facility_levels.push_back(0);
+	for (auto& transport : factory.transport_lines)
+		conf.transport_levels.push_back(0);
+
+	FlowGraph graph = factory.build_flowgraph(COAL, conf);
 
 	graph.dump("initial");
+	graph.calculate();
+	graph.dump("final");
 
-	for (int i=0; i<20; i++)
-	{
-		for (auto& node : graph.nodes)
-		{
-			node.update_forward();
-			node.shove_out(node.available());
-		}
-
-		graph.dump("it"+to_string(i));
-
-		for (auto& node : graph.nodes)
-			node.update_backward();
-
-		graph.dump("it"+to_string(i)+".5");
-	}
 }
