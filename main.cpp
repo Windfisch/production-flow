@@ -50,9 +50,9 @@ int main()
 	factory.initialize();
 
 	Factory::FactoryConfiguration conf;
-	for (auto& facility : factory.facilities)
+	for (size_t i=0; i<factory.facilities.size(); i++)
 		conf.facility_levels.push_back(0);
-	for (auto& transport : factory.transport_lines)
+	for (size_t i=0; i<factory.transport_lines.size(); i++)
 		conf.transport_levels.push_back(0);
 
 	FlowGraph graph = factory.build_flowgraph(COAL, conf);

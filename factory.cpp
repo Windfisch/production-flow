@@ -6,12 +6,13 @@
 
 using namespace std;
 
+const size_t INVALID_INDEX = SIZE_MAX;
 
-vector<int> Factory::collect_relevant_facilities(item_t item) const
+vector<size_t> Factory::collect_relevant_facilities(item_t item) const
 {
-	vector<int> relevant_facilities;
+	vector<size_t> relevant_facilities;
 
-	for (int facility_id = 0; facility_id < facilities.size(); facility_id++)
+	for (size_t facility_id = 0; facility_id < facilities.size(); facility_id++)
 	{
 		const auto& facility = facilities[facility_id];
 
@@ -34,12 +35,12 @@ vector<int> Factory::collect_relevant_facilities(item_t item) const
 	return relevant_facilities;
 }
 
-static int pop_root_node(vector<int>& relevant_facilities, const vector< unordered_set<int> >& incident_edges)
+static size_t pop_root_node(vector<size_t>& relevant_facilities, const vector< unordered_set<size_t> >& incident_edges)
 {
-	for (int& facility_id : relevant_facilities)
+	for (size_t& facility_id : relevant_facilities)
 		if (incident_edges[facility_id].empty())
 		{
-			int result = facility_id;
+			size_t result = facility_id;
 
 			facility_id = relevant_facilities.back();
 			relevant_facilities.pop_back();
@@ -47,7 +48,7 @@ static int pop_root_node(vector<int>& relevant_facilities, const vector< unorder
 			return result;
 		}
 
-	return -1;
+	return INVALID_INDEX;
 }
 
 void Factory::initialize()
@@ -63,18 +64,18 @@ void Factory::build_topological_sort()
 
 	for (int item = 0; item < MAX_ITEM; item++)
 	{
-		vector<int>& toposort = facility_toposort[item];
-		vector<int>& toposort_inv = facility_toposort_inv[item];
+		vector<size_t>& toposort = facility_toposort[item];
+		vector<size_t>& toposort_inv = facility_toposort_inv[item];
 		toposort.clear();
 		toposort_inv.resize(facilities.size());
 
 
-		vector<int> relevant_facilities = collect_relevant_facilities(item_t(item));
+		vector<size_t> relevant_facilities = collect_relevant_facilities(item_t(item));
 
 
 		// calculate incident / outgoing edges
-		vector< unordered_set<int> > incident_edges(facilities.size());
-		vector< unordered_set<int> > outgoing_edges(facilities.size());
+		vector< unordered_set<size_t> > incident_edges(facilities.size());
+		vector< unordered_set<size_t> > outgoing_edges(facilities.size());
 		for (size_t edge_id = 0; edge_id < transport_lines.size(); edge_id++)
 		{
 			const auto& edge = transport_lines[edge_id];
@@ -88,13 +89,13 @@ void Factory::build_topological_sort()
 
 
 		// do the actual topological sorting
-		int root;
-		while ((root = pop_root_node(relevant_facilities, incident_edges)) != -1)
+		size_t root;
+		while ((root = pop_root_node(relevant_facilities, incident_edges)) != INVALID_INDEX)
 		{
 			toposort.push_back(root);
 			toposort_inv[root] = toposort.size()-1;
 
-			for (int edge_id : outgoing_edges[root])
+			for (size_t edge_id : outgoing_edges[root])
 				incident_edges[transport_lines[edge_id].to].erase(edge_id);
 		}
 
@@ -109,12 +110,12 @@ void Factory::build_edge_table()
 	edge_table_per_item.resize(MAX_ITEM);
 	edge_table_per_item_inv.resize(MAX_ITEM);
 
-	for (int item = 0; item < MAX_ITEM; item++)
+	for (size_t item = 0; item < MAX_ITEM; item++)
 	{
 		edge_table_per_item[item].clear();
 		edge_table_per_item_inv[item].resize(transport_lines.size());
 
-		for (int i = 0; i < transport_lines.size(); i++)
+		for (size_t i = 0; i < transport_lines.size(); i++)
 			if (transport_lines[i].item_type == item)
 			{
 				edge_table_per_item[item].push_back(i);
@@ -136,28 +137,28 @@ FlowGraph Factory::build_flowgraph(item_t item, const Factory::FactoryConfigurat
 
 	// insert all facilities that are relevant for `item` into the flowgraph,
 	// topologically sorted from producers to consumers.
-	for (int facility_index : toposort)
+	for (size_t facility_index : toposort)
 	{
 		const auto& facility = facilities[facility_index];
-		int level = conf.facility_levels[facility_index];
+		size_t level = conf.facility_levels[facility_index];
 		double production_rate = facility.upgrade_plan[level].production_or_consumption.at(item);
 
 		flowgraph.nodes.emplace_back(production_rate);
 	}
 
 	// insert all transport lines that are relevant for `item`
-	for (int edge_index = 0; edge_index < edge_table.size(); edge_index++)
+	for (size_t edge_index = 0; edge_index < edge_table.size(); edge_index++)
 	{
 		const auto& edge = transport_lines[edge_table[edge_index]];
 		assert(edge.item_type == item);
-		int level = conf.transport_levels[edge_table[edge_index]];
+		size_t level = conf.transport_levels[edge_table[edge_index]];
 		double capacity = edge.upgrade_plan[level].capacity;
 	
 		flowgraph.edges.emplace_back(capacity);
 	}
 
 	// fill the nodes' edgetables.
-	for (int edge_index = 0; edge_index < edge_table.size(); edge_index++)
+	for (size_t edge_index = 0; edge_index < edge_table.size(); edge_index++)
 	{
 		const auto& edge = transport_lines[edge_table[edge_index]];
 		assert(edge.item_type == item);

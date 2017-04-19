@@ -60,20 +60,20 @@ struct Factory
 
 	struct TransportLine
 	{
-		TransportLine(item_t it, int from_, int to_, std::vector<TransportLineConfiguration> upgrade_plan_) :
+		TransportLine(item_t it, size_t from_, size_t to_, std::vector<TransportLineConfiguration> upgrade_plan_) :
 			item_type(it), from(from_), to(to_), upgrade_plan(std::move(upgrade_plan_)) {}
 
 		item_t item_type;
-		int from; // index in facilities[]
-		int to;   // index in facilities[]
+		size_t from; // index in facilities[]
+		size_t to;   // index in facilities[]
 
 		std::vector<TransportLineConfiguration> upgrade_plan;
 	};
 
 	struct FactoryConfiguration
 	{
-		std::vector<int> facility_levels;
-		std::vector<int> transport_levels;
+		std::vector<size_t> facility_levels;
+		std::vector<size_t> transport_levels;
 	};
 
 	std::vector<Facility> facilities;
@@ -90,15 +90,15 @@ struct Factory
 
 	// facility_toposort[item_level][i] = index_in_facilities, such that
 	// the Facilities referenced by i are topologically sorted.
-	std::vector< std::vector<int> > facility_toposort;
-	std::vector< std::vector<int> > facility_toposort_inv;
+	std::vector< std::vector<size_t> > facility_toposort;
+	std::vector< std::vector<size_t> > facility_toposort_inv;
 	
 	// edge_table_per_item[item_level][i] = index_in_edges
-	std::vector< std::vector<int> > edge_table_per_item;
-	std::vector< std::vector<int> > edge_table_per_item_inv;
+	std::vector< std::vector<size_t> > edge_table_per_item;
+	std::vector< std::vector<size_t> > edge_table_per_item_inv;
 
 	private:
-		std::vector<int> collect_relevant_facilities(item_t item) const;
+		std::vector<size_t> collect_relevant_facilities(item_t item) const;
 		void build_topological_sort();
 		void build_edge_table();
 

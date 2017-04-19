@@ -120,7 +120,7 @@ void FlowGraph::Node::update_backward()
 
 void FlowGraph::calculate()
 {
-	for (int i=0; i<20; i++)
+	for (int i=0; i<20; i++) // TODO: automatically stop upon convergence, not after 20 iterations
 	{
 		for (auto& node : nodes)
 		{
@@ -177,7 +177,7 @@ void FlowGraph::dump(string name) const
 	cout << "}" << endl;
 }
 
-int FlowGraph::edge_from(const Edge* edge) const
+size_t FlowGraph::edge_from(const Edge* edge) const
 {
 	for (size_t i=0; i<nodes.size(); i++)
 	{
@@ -189,7 +189,7 @@ int FlowGraph::edge_from(const Edge* edge) const
 	throw runtime_error("FlowGraph is corrupt");
 }
 
-int FlowGraph::edge_to(const Edge* edge) const
+size_t FlowGraph::edge_to(const Edge* edge) const
 {
 	for (size_t i=0; i<nodes.size(); i++)
 	{
