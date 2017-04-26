@@ -34,22 +34,23 @@ double FlowGraph::Node::available() const // amount available for pushing out
 	return max(0., incoming() + actual_production);
 }
 
+
+// from sources to sinks, push out the items at the rate the outgoing edges can handle.
+// we don't care about successor nodes being unable to handle the amount (yet).
+// updates edge.actual_flow and node.excess (and dependent: node.available(), incoming())
 void FlowGraph::Node::update_forward()
 {
 	if (max_production > 0.)
 		actual_production = max_production;
 	else
 		actual_production = -min(incoming(), -max_production); // never consume more than incoming
-}
-
-void FlowGraph::Node::shove_out(double amount) // try to output. will update outgoing_edges.*->actual_flow and this->excess
-{
+	
 	multimap<double, Edge*> sorted_edges;
 	for (Edge* edge : outgoing_edges)
 		sorted_edges.insert( std::pair<double, Edge*>(edge->actual_capacity, edge) );
 
 	size_t edges_remaining = sorted_edges.size();
-	double amount_remaining = amount;
+	double amount_remaining = available();
 
 	for (auto& it : sorted_edges)
 	{
@@ -83,6 +84,10 @@ void FlowGraph::Node::shove_out(double amount) // try to output. will update out
 		excess = 0.;
 }
 
+// from sinks to sources, propagate any excess which we could neither handle now push out.
+// we do this by reducing the capacity of our input edges. (which might generate excess for
+// our predecessor node in the next forward pass).
+// updates edge.actual_capacity.
 void FlowGraph::Node::update_backward()
 {
 	if (excess <= 0.)
@@ -120,21 +125,26 @@ void FlowGraph::Node::update_backward()
 
 void FlowGraph::calculate()
 {
-	for (int i=0; i<20; i++) // TODO: automatically stop upon convergence, not after 20 iterations
+	bool done;
+	int i = 0;
+	do
 	{
 		for (auto& node : nodes)
-		{
 			node.update_forward();
-			node.shove_out(node.available());
-		}
 
 		dump("it"+to_string(i));
 
 		for (auto& node : nodes)
 			node.update_backward();
 
+		done = true;
+		for (auto& node : nodes)
+			if (node.excess > 0.)
+				done = false;
+
 		dump("it"+to_string(i)+".5");
-	}
+		i++;
+	} while(!done);
 }
 
 

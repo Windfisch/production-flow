@@ -32,7 +32,6 @@ struct FlowGraph
 		double available() const; // amount available for pushing out
 		void update_forward();
 		void update_backward();
-		void shove_out(double amount); // try to output. will update outgoing_edges.*->actual_flow and this->excess
 
 		std::string label() const;
 	};
