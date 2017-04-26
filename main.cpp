@@ -2,6 +2,7 @@
 
 #include "factory.hpp"
 #include "flowgraph.hpp"
+#include "actiongraph.hpp"
 
 using namespace std;
 
@@ -60,5 +61,8 @@ int main()
 	graph.dump("initial");
 	graph.calculate();
 	graph.dump("final");
+
+	ActionGraph actiongraph(&factory);
+	actiongraph.dijkstra(conf);
 
 }

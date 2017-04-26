@@ -8,6 +8,7 @@
 
 enum item_t
 {
+	DONE = -1,
 	FIRST_ITEM = 0,
 
 	COAL = 0,

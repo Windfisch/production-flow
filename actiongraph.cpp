@@ -1,10 +1,16 @@
 #include <vector>
 #include <cassert>
+#include <memory>
+#include <iostream>
+#include <boost/heap/binomial_heap.hpp>
 #include "actiongraph.hpp"
 
 using namespace std;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
 bool ActionGraph::Node::equals(const ActionGraph::Node& other, const Factory* factory) const
+#pragma GCC diagnostic pop
 {
 	if (current_item_type != other.current_item_type)
 		return false;
@@ -38,9 +44,12 @@ bool ActionGraph::Node::equals(const ActionGraph::Node& other, const Factory* fa
 	return true;
 }
 
-vector<ActionGraph::Node> ActionGraph::Node::successors(const Factory* factory) const
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+vector< unique_ptr<ActionGraph::Node> > ActionGraph::Node::successors(const Factory* factory) const
+#pragma GCC diagnostic pop
 {
-	vector<ActionGraph::Node> result;
+	vector< unique_ptr<ActionGraph::Node> > result;
 
 	#ifndef NDEBUG
 	// all flowgraphs for items that are more advanced than the current_item_type
@@ -60,16 +69,11 @@ vector<ActionGraph::Node> ActionGraph::Node::successors(const Factory* factory) 
 
 	if (flow.is_valid())
 	{
-		if (current_item_type > 0)
-		{
-			result.emplace_back(*this);
-			result.back().current_item_type = item_t(current_item_type-1);
-		}
-		else
-		{
-			// we're in a goal state :)
-			// FIXME: hm. not sure. how to differentiate between this and "dead end"?
-		}
+		auto nodeptr = make_unique<ActionGraph::Node>(*this);
+		nodeptr->current_item_type = item_t(current_item_type-1); // if this reaches '-1', then we're done.
+		nodeptr->coming_from = {Edge::DECREMENT_CURRENT_ITEM_TYPE, 0, 1};
+		nodeptr->total_cost += 0.;
+		result.emplace_back(move(nodeptr));
 	}
 	else
 	{
@@ -85,9 +89,11 @@ vector<ActionGraph::Node> ActionGraph::Node::successors(const Factory* factory) 
 			if ( (node.max_production > 0. && node.actual_production == node.max_production) && // a producing node is at max capacity
 				conf.facility_levels[facility_idx] < facility.upgrade_plan.size() ) // and we can actually upgrade the node
 			{
-				result.emplace_back(*this);
-				result.back().conf.facility_levels[facility_idx]++;
-				// TODO: cost at facility->upgrade_plan[ conf.facility_levels[facility_idx] ]
+				auto nodeptr = make_unique<ActionGraph::Node>(*this);
+				nodeptr->conf.facility_levels[facility_idx]++;
+				nodeptr->coming_from = {Edge::UPGRADE_FACILITY, facility_idx, 1};
+				nodeptr->total_cost += facility.upgrade_plan[ conf.facility_levels[facility_idx] ].incremental_cost;
+				result.emplace_back(move(nodeptr));
 			}
 		}
 		
@@ -103,9 +109,11 @@ vector<ActionGraph::Node> ActionGraph::Node::successors(const Factory* factory) 
 			if ( (edge.actual_flow == edge.capacity) && // an edge is at max capacity
 				conf.transport_levels[transport_line_idx] < transport_line.upgrade_plan.size() ) // and we can actually upgrade the edge
 			{
-				result.emplace_back(*this);
-				result.back().conf.transport_levels[transport_line_idx]++;
-				// TODO: cost at transport_line->upgrade_plan[ conf.transport_levels[transport_line_idx] ]
+				auto nodeptr = make_unique<ActionGraph::Node>(*this);
+				nodeptr->conf.transport_levels[transport_line_idx]++;
+				nodeptr->coming_from = {Edge::UPGRADE_TRANSPORT_LINE, transport_line_idx, 1};
+				nodeptr->total_cost += transport_line.upgrade_plan[ conf.transport_levels[transport_line_idx] ].incremental_cost;
+				result.emplace_back(move(nodeptr));
 			}
 		}
 	}
@@ -113,20 +121,63 @@ vector<ActionGraph::Node> ActionGraph::Node::successors(const Factory* factory) 
 	return result;
 }
 
-/*
+
+struct node_comparator
+{
+	bool operator() (const ActionGraph::Node& a, const ActionGraph::Node& b) const
+	{
+		return a.total_cost < b.total_cost;
+	}
+};
+
 void ActionGraph::dijkstra(Factory::FactoryConfiguration initial_config)
 {
-	struct OpenlistEntry
+	auto start_node = make_unique<ActionGraph::Node>();
+	start_node->conf = initial_config;
+	start_node->current_item_type = item_t(MAX_ITEM-1);
+	start_node->coming_from = {Edge::NONE, 0, 0};
+	start_node->total_cost = 0.;
+
+	vector< unique_ptr< ActionGraph::Node> > openlist;
+	openlist.push_back(move(start_node));
+
+	while (!openlist.empty())
 	{
-		Node node;
-		double f;
+		cout << "openlist has size " << openlist.size() << endl;
 
-		OpenlistEntry(Node&& node_, double f_) : node(node_), f(f_) {}
-	};
+		// find and remove smallest element
+		auto smallest = openlist.begin();
+		for (auto it = openlist.begin(); it != openlist.end(); it++)
+			if ((*it)->total_cost < (*smallest)->total_cost)
+				smallest=it;
+		
+		auto nodeptr = move(*smallest);
+		*smallest = move(openlist.back());
+		openlist.pop_back();
 
-	typedef boost::heap::binomial_heap<OpenlistEntry> openlist_t;
-	typedef openlist::handle_type openlist_handle_t;
 
-	openlist_t openlist;
-	unordered_map<Node, openlist_handle_t>
-}*/
+		// expand node
+		auto successor_nodes = nodeptr->successors(factory);
+		for (auto& successor : successor_nodes)
+		{
+			if (successor->current_item_type == DONE)
+			{
+				// we've found a goal state! :)
+				cout << "success" << endl;
+				abort(); // lol
+			}
+
+			bool found = false;
+			for (auto& openlist_node : openlist)
+				if (openlist_node->equals(*successor, factory))
+				{
+					openlist_node = move(successor);
+					found = true;
+					break;
+				}
+
+			if (!found)
+				openlist.push_back(move(successor));
+		}
+	}
+}
