@@ -101,5 +101,4 @@ struct Factory
 		std::vector<size_t> collect_relevant_facilities(item_t item) const;
 		void build_topological_sort();
 		void build_edge_table();
-
 };

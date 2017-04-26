@@ -48,6 +48,7 @@ struct FlowGraph
 	void build();
 	void calculate();
 	void dump(std::string name) const;
+	bool is_valid() const;
 	size_t edge_from(const Edge* edge) const;
 	size_t edge_to(const Edge* edge) const;
 };

@@ -147,6 +147,14 @@ void FlowGraph::calculate()
 	} while(!done);
 }
 
+// a graph is valid if all nodes have sufficient input
+bool FlowGraph::is_valid() const
+{
+	for (const auto& node : nodes)
+		if (node.incoming() < -node.max_production)
+			return false;
+	return true;
+}
 
 
 

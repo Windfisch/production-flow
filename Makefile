@@ -1,7 +1,7 @@
 include config.mk
 
 EXE=main
-OBJECTS=main.o factory.o flowgraph.o
+OBJECTS=main.o factory.o flowgraph.o actiongraph.o
 
 
 
