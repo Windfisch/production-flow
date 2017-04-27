@@ -8,32 +8,43 @@ An attempt to optimize over production flow graphs, e.g. for game
 [Factorio](https://factorio.com). This is meant to be used in the 
 [factorio bot](https://github.com/Windfisch/factorio-bot) I'm  working on.
 
-This is still in a very early state of development. The production graph
-construction (see below) is already implemented, while no optimisation has
-been attempted yet.
-
+This is still in a very early state of development. Optimisation seems
+to work, but lacks some testing and proper visualisation
 
 Usage
 -----
 
-This is not really usable yet. Build with `make`, run with `make graph.pdf`,
+This is not really usable yet.
+
+### for flow calculation
+
+Checkout revision `14e9e645`, build with `make`, run with `make graph.pdf`,
 then open `graph.pdf` in your favourite pdf viewer. Graphs are currently
 generated to stdout using the [graphviz](http://www.graphviz.org/) tool **dot**.
+
+(Note that in the current master, the output is cluttered, so this will
+not work. Also, the test graph is different now.)
+
+### for flow optimisation
+
+With the current master, build with `make`, run with `./main`, and watch
+out for `item:...` and `ITEM:...` messages. These are the nodes in the
+openlist, and the expanded nodes, respectively.
 
 
 Screenshots
 -----------
 
 These are three visualisations of different stages in the production graph
-flow calculation.
+flow calculation. (From rev. `14e9e645`)
 
 ![initial graph](doc/img/prodgraph1.gif)
 ![first iteration](doc/img/prodgraph2.gif)
 ![final flow](doc/img/prodgraph3.gif)
 
 
-How does/will it work?
-----------------------
+How does it work?
+-----------------
 
 ### Production graph construction
 
@@ -127,7 +138,7 @@ All nodes that have an overall-**valid** production graph (for all items), are
 considered **goal** nodes.
 
 The output will thus be the most cost-efficient factory upgrade plan to
-fulfill all demands.
+satisfy all demands.
 
 
 Problems

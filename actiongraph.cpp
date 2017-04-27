@@ -129,6 +129,8 @@ struct node_comparator
 
 pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::FactoryConfiguration initial_config)
 {
+	// FIXME: closed list is missing!
+
 	auto start_node = make_unique<ActionGraph::Node>();
 	start_node->conf = initial_config;
 	start_node->current_item_type = item_t(MAX_ITEM-1);
