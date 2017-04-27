@@ -86,5 +86,4 @@ int main()
 
 	ActionGraph actiongraph(&factory);
 	actiongraph.dijkstra(conf);
-
 }

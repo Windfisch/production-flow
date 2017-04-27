@@ -130,7 +130,7 @@ struct node_comparator
 	}
 };
 
-void ActionGraph::dijkstra(Factory::FactoryConfiguration initial_config)
+pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::FactoryConfiguration initial_config)
 {
 	auto start_node = make_unique<ActionGraph::Node>();
 	start_node->conf = initial_config;
@@ -180,8 +180,8 @@ void ActionGraph::dijkstra(Factory::FactoryConfiguration initial_config)
 			if (successor->current_item_type == DONE)
 			{
 				// we've found a goal state! :)
-				cout << "success" << endl;
-				abort(); // lol
+				cout << "success, cost = " << successor->total_cost << endl;
+				return pair<Factory::FactoryConfiguration, double>(successor->conf, successor->total_cost);
 			}
 
 			bool found = false;
@@ -197,4 +197,7 @@ void ActionGraph::dijkstra(Factory::FactoryConfiguration initial_config)
 				openlist.push_back(move(successor));
 		}
 	}
+
+	cout << "could not find a solution :(" << endl;
+	return pair<Factory::FactoryConfiguration, double>(initial_config, -1.);
 }
