@@ -81,8 +81,6 @@ For now, for every item type I, a different production graph is considered
 
 ### Optimisation
 
-Note: this is not implemented yet.
-
 Adding new nodes to the graph can cause item shortages. The goal of the
 optimisation is to fix them, by either adding new edges / facilities, or by
 upgrading them. Without loss of generality we can restrict outselves to
