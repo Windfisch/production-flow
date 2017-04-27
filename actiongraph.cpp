@@ -155,11 +155,28 @@ void ActionGraph::dijkstra(Factory::FactoryConfiguration initial_config)
 		*smallest = move(openlist.back());
 		openlist.pop_back();
 
+		cout << "item: " << nodeptr->current_item_type << ", ";
+		cout << "nodes:";
+		for (auto lvl : nodeptr->conf.facility_levels)
+			cout << " " << lvl;
+		cout << ", edges:";
+		for (auto lvl : nodeptr->conf.transport_levels)
+			cout << " " << lvl;
+		cout << endl;
+
 
 		// expand node
 		auto successor_nodes = nodeptr->successors(factory);
 		for (auto& successor : successor_nodes)
 		{
+			cout << "  ITEM: " << successor->current_item_type << ", ";
+			cout << "nodes:";
+			for (auto lvl : successor->conf.facility_levels)
+				cout << " " << lvl;
+			cout << ", edges:";
+			for (auto lvl : successor->conf.transport_levels)
+				cout << " " << lvl;
+			cout << endl;
 			if (successor->current_item_type == DONE)
 			{
 				// we've found a goal state! :)
