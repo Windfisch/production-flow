@@ -71,7 +71,6 @@ vector< unique_ptr<ActionGraph::Node> > ActionGraph::Node::successors(const Fact
 	{
 		auto nodeptr = make_unique<ActionGraph::Node>(*this);
 		nodeptr->current_item_type = item_t(current_item_type-1); // if this reaches '-1', then we're done.
-		nodeptr->coming_from = {Edge::DECREMENT_CURRENT_ITEM_TYPE, 0, 1};
 		nodeptr->total_cost += 0.;
 		result.emplace_back(move(nodeptr));
 	}
@@ -91,7 +90,6 @@ vector< unique_ptr<ActionGraph::Node> > ActionGraph::Node::successors(const Fact
 			{
 				auto nodeptr = make_unique<ActionGraph::Node>(*this);
 				nodeptr->conf.facility_levels[facility_idx]++;
-				nodeptr->coming_from = {Edge::UPGRADE_FACILITY, facility_idx, 1};
 				nodeptr->total_cost += facility.upgrade_plan[ conf.facility_levels[facility_idx] ].incremental_cost;
 				result.emplace_back(move(nodeptr));
 			}
@@ -111,7 +109,6 @@ vector< unique_ptr<ActionGraph::Node> > ActionGraph::Node::successors(const Fact
 			{
 				auto nodeptr = make_unique<ActionGraph::Node>(*this);
 				nodeptr->conf.transport_levels[transport_line_idx]++;
-				nodeptr->coming_from = {Edge::UPGRADE_TRANSPORT_LINE, transport_line_idx, 1};
 				nodeptr->total_cost += transport_line.upgrade_plan[ conf.transport_levels[transport_line_idx] ].incremental_cost;
 				result.emplace_back(move(nodeptr));
 			}
@@ -135,7 +132,6 @@ pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::Facto
 	auto start_node = make_unique<ActionGraph::Node>();
 	start_node->conf = initial_config;
 	start_node->current_item_type = item_t(MAX_ITEM-1);
-	start_node->coming_from = {Edge::NONE, 0, 0};
 	start_node->total_cost = 0.;
 
 	vector< unique_ptr< ActionGraph::Node> > openlist;
