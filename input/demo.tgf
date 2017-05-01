@@ -1,0 +1,74 @@
+1 coal 7/15
+2 coal 5/15
+3 iron-ore 15/20
+4 iron-plate 15/20
+5 copper-ore 10/25
+6 copper-plate 10/25
+7 copper-ore 0/15
+8 copper-plate 0/15
+9 iron-ore 0/20
+10 iron-plate 0/20
+11 red-pot 0.5/2
+12 
+13 green-pot 0.5/2
+14 circuit 3/20
+15 
+16 
+17 
+18 stuff 0.2/1.0
+19 
+20 
+21 steel-plate 0/4
+22 
+23 pumpjack 0/0.2
+24 
+25 
+26 
+27 pipe 0.2/5
+28 pumpjack-sink 0.1/0.1
+29 pipe-sink 0.5/0.5
+30 circuit 0/20
+#
+3 4 iron-ore 0.3
+1 4 coal 2.5
+5 6 coal 0.5
+1 6 coal 1
+12 11 iron-plate 0.5
+16 14 copper-plate 0.4
+15 14 copper-plate 2
+14 17 circuit 0.5
+4 15 iron-plate 1
+15 12 iron-plate 1
+12 19 iron-plate 0.3
+19 13 iron-plate 0.5
+19 20 iron-plate 2
+20 18 iron-plate 1.5
+10 20 iron-plate 7
+10 21 iron-plate 0.3
+2 22 coal 2
+22 10 coal 0.5
+22 21 coal 2x
+9 10 iron-ore 0.5
+2 8 coal 3x
+7 8 copper-ore 0.3
+17 24 circuit 1
+24 13 circuit 1
+24 18 circuit 1
+14 25 copper-plate 0.4
+25 23 copper-plate 0.8
+21 23 steel-plate 3.5x
+20 26 iron-plate 1
+26 23 iron-plate 1
+26 27 iron-plate 0.5
+27 23 pipe 1
+23 28 pumpjack 0
+27 29 pipe 0
+16 18 copper-plate 6
+4 21 iron-plate 25x
+1 22 coal 30x
+6 16 copper-plate 4
+10 15 iron-plate 27x
+8 16 copper-plate 15x
+8 30 copper-plate 3x
+10 30 iron-plate 4x
+30 17 circuit 17x

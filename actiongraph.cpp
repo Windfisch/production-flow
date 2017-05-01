@@ -190,12 +190,13 @@ pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::Facto
 					found = true;
 					break;
 				}
-			for (auto& closedlist_node : closedlist)
-				if (closedlist_node->equals(*successor, factory))
-				{
-					found = true;
-					break;
-				}
+			if (!found)
+				for (auto& closedlist_node : closedlist)
+					if (closedlist_node->equals(*successor, factory))
+					{
+						found = true;
+						break;
+					}
 
 			if (!found)
 				openlist.push_back(move(successor));

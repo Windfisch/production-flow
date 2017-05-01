@@ -27,9 +27,29 @@ not work. Also, the test graph is different now.)
 
 ### for flow optimisation
 
-With the current master, build with `make`, run with `./main`, and watch
+With the current master, build with `make`, run with `./main input/demo.tgf`, and watch
 out for `item:...` and `ITEM:...` messages. These are the nodes in the
 openlist, and the expanded nodes, respectively.
+
+### input file format
+
+Factories are read from `.tgf`-files; I use the
+[yEd](https://www.yworks.com/products/yed]) graph editor to create them,
+but you can also write them by hand. The format is simple and described
+in the [Wikipedia](https://en.wikipedia.org/wiki/Trivial_Graph_Format).
+
+**Nodes** model *facilities*. The node text must either be empty or in the
+format `type curr/max`, where `type` is a facility type like `coal`,
+`iron-ore` etc, and `curr` and `max` are floating point numbers denoting the
+current and maximum production capacity.  See
+[`read_factory.cpp`](read_factory.cpp) for a definition of these types.  Empty
+text will create a splitter-like node.
+
+**Edges** model *transport lines*. The text must be in the format
+`item length`, where `item` is an item type, and `length` is the physical
+length / cost of a transport line. Currently, all transport lines have the
+same upgrade plans, only the cost depends on the length. (Hard coded in
+`read_factory.cpp`)
 
 
 Screenshots

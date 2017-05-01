@@ -125,6 +125,7 @@ void FlowGraph::Node::update_backward()
 
 void FlowGraph::calculate()
 {
+	//dump("initial");
 	bool done;
 	int i = 0;
 	do
@@ -132,7 +133,7 @@ void FlowGraph::calculate()
 		for (auto& node : nodes)
 			node.update_forward();
 
-		dump("it"+to_string(i));
+		//dump("it"+to_string(i));
 
 		for (auto& node : nodes)
 			node.update_backward();
@@ -142,9 +143,10 @@ void FlowGraph::calculate()
 			if (node.excess > 0.)
 				done = false;
 
-		dump("it"+to_string(i)+".5");
+		//dump("it"+to_string(i)+".5");
 		i++;
 	} while(!done);
+	dump("FINAL");
 }
 
 // a graph is valid if all nodes have sufficient input

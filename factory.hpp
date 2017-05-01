@@ -3,6 +3,7 @@
 #include <unordered_set>
 #include <set>
 #include <map>
+#include <string>
 
 #include "flowgraph.hpp"
 
@@ -13,11 +14,20 @@ enum item_t
 
 	COAL = 0,
 	IRON_ORE,
+	COPPER_ORE,
 	IRON_PLATE,
+	COPPER_PLATE,
+	STEEL_PLATE,
+	PIPE,
+	CIRCUIT,
+	RED_POT,
+	GREEN_POT,
+	PUMPJACK,
 
 	MAX_ITEM // must be last
 };
 
+extern std::map<item_t, std::string> item_name;
 
 struct Factory
 {
@@ -35,21 +45,15 @@ struct Factory
 		{
 			for (const auto& conf : upgrade_plan)
 				for (const auto& itemprod : conf.production_or_consumption)
-					if (itemprod.second > 0.)
-						products.insert(itemprod.first);
-					else
-						ingredients.insert(itemprod.first);
+					if (itemprod.second != 0.)
+						items.insert(itemprod.first);
 		}
 
 		std::vector<FacilityConfiguration> upgrade_plan;
-
-		// dependent / redundant data
-
-		std::set<item_t> ingredients;
-		std::set<item_t> products;
-
-		item_t most_advanced_ingredient;
 		item_t most_basic_item_involved;
+		std::set<item_t> items; // this facility is relevant for these items.
+		                        // either because it produces/consumes them, or
+		                        // because it has edges of that type.
 	};
 
 	struct TransportLineConfiguration
@@ -85,6 +89,7 @@ struct Factory
 	void initialize(); // must be called after filling in the data to initialize dependent data!
 
 	FlowGraph build_flowgraph(item_t item, const Factory::FactoryConfiguration& conf) const;
+	void simulate_debug(const FactoryConfiguration& conf) const; // calculates the flow and outputs a graphviz-dot-graph.
 
 
 	// dependent / redundant data follows
@@ -102,4 +107,5 @@ struct Factory
 		std::vector<size_t> collect_relevant_facilities(item_t item) const;
 		void build_topological_sort();
 		void build_edge_table();
+		void build_facility_itemset();
 };

@@ -3,8 +3,24 @@
 
 #include <string>
 #include <cassert>
+#include <iostream>
 
 using namespace std;
+
+map<item_t, string> item_name =
+{
+	{COAL, "coal"},
+	{IRON_ORE, "iron-ore"},
+	{COPPER_ORE, "copper-ore"},
+	{IRON_PLATE, "iron-plate"},
+	{COPPER_PLATE, "copper-plate"},
+	{STEEL_PLATE, "steel-plate"},
+	{PIPE, "pipe"},
+	{CIRCUIT, "circuit"},
+	{RED_POT, "red-pot"},
+	{GREEN_POT, "green-pot"},
+	{PUMPJACK, "pumpjack"}
+};
 
 const size_t INVALID_INDEX = SIZE_MAX;
 
@@ -16,8 +32,7 @@ vector<size_t> Factory::collect_relevant_facilities(item_t item) const
 	{
 		const auto& facility = facilities[facility_id];
 
-		if (facility.ingredients.find(item) != facility.ingredients.end() ||
-			facility.products.find(item) != facility.products.end())
+		if (facility.items.find(item) != facility.items.end())
 		{
 			relevant_facilities.push_back(facility_id);
 		}
@@ -53,8 +68,22 @@ static size_t pop_root_node(vector<size_t>& relevant_facilities, const vector< u
 
 void Factory::initialize()
 {
+	build_facility_itemset();
 	build_topological_sort();
 	build_edge_table();
+}
+
+// marks all facilities relevant for $item, if they have an $item-edge
+void Factory::build_facility_itemset()
+{
+	for (const auto& tl : transport_lines)
+	{
+		facilities[tl.from].items.insert(tl.item_type);
+		facilities[tl.to].items.insert(tl.item_type);
+	}
+
+	for (auto& fac : facilities)
+		fac.most_basic_item_involved = *fac.items.begin();
 }
 
 void Factory::build_topological_sort()
@@ -141,7 +170,12 @@ FlowGraph Factory::build_flowgraph(item_t item, const Factory::FactoryConfigurat
 	{
 		const auto& facility = facilities[facility_index];
 		size_t level = conf.facility_levels[facility_index];
-		double production_rate = facility.upgrade_plan[level].production_or_consumption.at(item);
+		double production_rate;
+		auto iter = facility.upgrade_plan[level].production_or_consumption.find(item);
+		if (iter != facility.upgrade_plan[level].production_or_consumption.end())
+			production_rate = iter->second;
+		else
+			production_rate = 0.;
 
 		flowgraph.nodes.emplace_back(production_rate);
 	}
@@ -170,4 +204,46 @@ FlowGraph Factory::build_flowgraph(item_t item, const Factory::FactoryConfigurat
 	}
 
 	return flowgraph;
+}
+
+void Factory::simulate_debug(const FactoryConfiguration& conf) const
+{
+	FlowGraph flowgraphs[MAX_ITEM];
+	for (int i = 0; i < MAX_ITEM; i++)
+	{
+		flowgraphs[i] = build_flowgraph(item_t(i), conf);
+		flowgraphs[i].calculate();
+	}
+
+	for (size_t i = 0; i < facilities.size(); i++)
+	{
+		bool unsatisfied = false;
+
+		cout << i << " [label=\"";
+		for (item_t item : facilities[i].items)
+		{
+			const auto& node = flowgraphs[item].nodes[facility_toposort_inv[item][i]];
+			// if it's a consumer which is getting not enough input
+			if (node.max_production < 0 && -node.actual_production < -node.max_production)
+				unsatisfied = true;
+
+			if (node.max_production != 0.)
+				cout << item_name.at(item) << ":" << node.actual_production << "/" << node.max_production << ", ";
+		}
+		cout << "\"";
+
+		if (unsatisfied)
+			cout << ", color=red";
+
+		cout << "];" << endl;
+	}
+
+	cout << endl;
+
+	for (size_t i = 0; i < transport_lines.size(); i++)
+	{
+		const auto& tl = transport_lines[i];
+		const auto& edge = flowgraphs[tl.item_type].edges[edge_table_per_item_inv[tl.item_type][i]];
+		cout << tl.from << " -> " << tl.to << " [label=\"" << item_name.at(tl.item_type) << ": " << edge.actual_flow << "/" << edge.capacity << "\"];"<<endl;
+	}
 }
