@@ -34,7 +34,7 @@ openlist, and the expanded nodes, respectively.
 ### input file format
 
 Factories are read from `.tgf`-files; I use the
-[yEd](https://www.yworks.com/products/yed]) graph editor to create them,
+[yEd](https://www.yworks.com/products/yed) graph editor to create them,
 but you can also write them by hand. The format is simple and described
 in the [Wikipedia](https://en.wikipedia.org/wiki/Trivial_Graph_Format).
 
