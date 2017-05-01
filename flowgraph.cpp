@@ -11,6 +11,8 @@
 
 using namespace std;
 
+constexpr double EPSILON=0.001;
+
 template <typename T>
 std::string str(const T a_value, const int n = 3)
 {
@@ -140,7 +142,8 @@ void FlowGraph::calculate()
 
 		done = true;
 		for (auto& node : nodes)
-			if (node.excess > 0.)
+			//if (node.excess > 0.)
+			if (node.excess > 0. + EPSILON)
 				done = false;
 
 		//dump("it"+to_string(i)+".5");
