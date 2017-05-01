@@ -129,19 +129,18 @@ struct node_comparator
 
 pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::FactoryConfiguration initial_config)
 {
-	// FIXME: closed list is missing!
-
 	auto start_node = make_unique<ActionGraph::Node>();
 	start_node->conf = initial_config;
 	start_node->current_item_type = item_t(MAX_ITEM-1);
 	start_node->total_cost = 0.;
 
 	vector< unique_ptr< ActionGraph::Node> > openlist;
+	vector< unique_ptr< ActionGraph::Node> > closedlist;
 	openlist.push_back(move(start_node));
 
 	while (!openlist.empty())
 	{
-		cout << "openlist has size " << openlist.size() << endl;
+		cout << "openlist has size " << openlist.size() << ", total expanded = " << openlist.size() + closedlist.size() << endl;
 
 		// find and remove smallest element
 		auto smallest = openlist.begin();
@@ -149,7 +148,8 @@ pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::Facto
 			if ((*it)->total_cost < (*smallest)->total_cost)
 				smallest=it;
 		
-		auto nodeptr = move(*smallest);
+		closedlist.push_back(move(*smallest));
+		auto& nodeptr = closedlist.back();
 		*smallest = move(openlist.back());
 		openlist.pop_back();
 
@@ -178,7 +178,7 @@ pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::Facto
 			if (successor->current_item_type == DONE)
 			{
 				// we've found a goal state! :)
-				cout << "success, cost = " << successor->total_cost << endl;
+				cout << "success, cost = " << successor->total_cost << ", expanded " << closedlist.size() + openlist.size() << " nodes" << endl;
 				return pair<Factory::FactoryConfiguration, double>(successor->conf, successor->total_cost);
 			}
 
@@ -187,6 +187,12 @@ pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::Facto
 				if (openlist_node->equals(*successor, factory))
 				{
 					openlist_node = move(successor);
+					found = true;
+					break;
+				}
+			for (auto& closedlist_node : closedlist)
+				if (closedlist_node->equals(*successor, factory))
+				{
 					found = true;
 					break;
 				}
