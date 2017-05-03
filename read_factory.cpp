@@ -79,8 +79,8 @@ Factory read_factory(string file)
 				throw runtime_error("invalid format");
 
 			string recipe = line.substr(p1+1, p2-p1-1);
-			double current = stof(line.substr(p2+1, p3-p2-1));
-			double maximum = stof(line.substr(p3+1));
+			double current = stod(line.substr(p2+1, p3-p2-1));
+			double maximum = stod(line.substr(p3+1));
 
 			cout << "recipe '" << recipe << "' with " << current << "/" << maximum << endl;
 
@@ -120,7 +120,7 @@ Factory read_factory(string file)
 		string dist_x = line.substr(p3+1);
 
 		bool exists = (dist_x.substr(dist_x.length()-1) != "x");
-		double dist = stof(dist_x);
+		double dist = stod(dist_x);
 
 		cout << "transport of " << item << " " << from << "->" << to << ", distance " << dist << " (line exists=" << exists << ")" << endl;
 
