@@ -28,14 +28,15 @@
 28 pumpjack-sink 0.1/0.1
 29 pipe-sink 0.5/0.5
 30 circuit 0/20
+31 
 #
 3 4 iron-ore 0.3
 1 4 coal 2.5
-5 6 coal 0.5
+5 6 copper-ore 0.5
 1 6 coal 1
 12 11 iron-plate 0.5
 16 14 copper-plate 0.4
-15 14 copper-plate 2
+15 14 iron-plate 2
 14 17 circuit 0.5
 4 15 iron-plate 1
 15 12 iron-plate 1
@@ -63,7 +64,7 @@
 27 23 pipe 1
 23 28 pumpjack 0
 27 29 pipe 0
-16 18 copper-plate 6
+16 31 copper-plate 5
 4 21 iron-plate 25x
 1 22 coal 30x
 6 16 copper-plate 4
@@ -72,3 +73,5 @@
 8 30 copper-plate 3x
 10 30 iron-plate 4x
 30 17 circuit 17x
+31 18 copper-plate 1
+31 11 copper-plate 2
