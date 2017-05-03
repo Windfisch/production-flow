@@ -21,7 +21,7 @@ bool ActionGraph::Node::equals(const ActionGraph::Node& other, const Factory* fa
 	assert(other.conf.facility_levels.size() == factory->facilities.size());
 	for (size_t i=0; i<conf.facility_levels.size(); i++)
 	{
-		if (factory->facilities[i].most_basic_item_involved > current_item_type)
+		if (factory->facilities[i].most_advanced_item_involved > current_item_type)
 			continue;
 		else
 			if (conf.facility_levels[i] != other.conf.facility_levels[i])

@@ -50,7 +50,7 @@ struct Factory
 		}
 
 		std::vector<FacilityConfiguration> upgrade_plan;
-		item_t most_basic_item_involved;
+		item_t most_advanced_item_involved;
 		std::set<item_t> items; // this facility is relevant for these items.
 		                        // either because it produces/consumes them, or
 		                        // because it has edges of that type.

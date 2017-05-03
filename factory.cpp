@@ -83,7 +83,7 @@ void Factory::build_facility_itemset()
 	}
 
 	for (auto& fac : facilities)
-		fac.most_basic_item_involved = *fac.items.begin();
+		fac.most_advanced_item_involved = *fac.items.rbegin();
 }
 
 void Factory::build_topological_sort()
