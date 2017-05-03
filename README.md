@@ -27,9 +27,8 @@ not work. Also, the test graph is different now.)
 
 ### for flow optimisation
 
-With the current master, build with `make`, run with `./main input/demo.tgf`, and watch
-out for `item:...` and `ITEM:...` messages. These are the nodes in the
-openlist, and the expanded nodes, respectively.
+With the current master, build with `make`, run with `./main input/demo.tgf`.
+For a detailed description of the output, refer to [doc/output.md](doc/output.md).
 
 ### input file format
 
@@ -55,7 +54,9 @@ same upgrade plans, only the cost depends on the length. (Hard coded in
 Screenshots
 -----------
 
-These are three visualisations of different stages in the production graph
+![an entire factory after optimisation](doc/img/factory1.gif)
+
+Below are three visualisations of different stages in the production graph
 flow calculation. (From rev. `14e9e645`)
 
 ![initial graph](doc/img/prodgraph1.gif)

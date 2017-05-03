@@ -215,11 +215,13 @@ void Factory::simulate_debug(const FactoryConfiguration& conf) const
 		flowgraphs[i].calculate();
 	}
 
+	cout << "digraph \"factory\" {" << endl;
+
 	for (size_t i = 0; i < facilities.size(); i++)
 	{
 		bool unsatisfied = false;
 
-		cout << i << " [label=\"";
+		cout << "\t" << i << " [label=\"";
 		for (item_t item : facilities[i].items)
 		{
 			const auto& node = flowgraphs[item].nodes[facility_toposort_inv[item][i]];
@@ -244,6 +246,7 @@ void Factory::simulate_debug(const FactoryConfiguration& conf) const
 	{
 		const auto& tl = transport_lines[i];
 		const auto& edge = flowgraphs[tl.item_type].edges[edge_table_per_item_inv[tl.item_type][i]];
-		cout << tl.from << " -> " << tl.to << " [label=\"" << item_name.at(tl.item_type) << ": " << edge.actual_flow << "/" << edge.capacity << "\"];"<<endl;
+		cout << "\t" << tl.from << " -> " << tl.to << " [label=\"" << item_name.at(tl.item_type) << ": " << edge.actual_flow << "/" << edge.capacity << "\"];"<<endl;
 	}
+	cout << "}" << endl;
 }
