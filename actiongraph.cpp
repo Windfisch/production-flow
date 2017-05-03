@@ -7,8 +7,6 @@
 
 using namespace std;
 
-constexpr double EPSILON = 0.001;
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 bool ActionGraph::Node::equals(const ActionGraph::Node& other, const Factory* factory) const
@@ -87,8 +85,7 @@ vector< unique_ptr<ActionGraph::Node> > ActionGraph::Node::successors(const Fact
 			const size_t facility_idx = toposort[i];
 			const auto& facility = factory->facilities[facility_idx];
 
-			//if ( (node.max_production > 0. && node.actual_production == node.max_production) && // a producing node is at max capacity
-			if ( (node.max_production >= 0. && node.actual_production >= node.max_production-EPSILON) && // a producing node is at max capacity
+			if ( (node.max_production >= 0 && node.actual_production >= node.max_production) && // a producing node is at max capacity
 				conf.facility_levels[facility_idx]+1 < facility.upgrade_plan.size() ) // and we can actually upgrade the node
 			{
 				auto nodeptr = make_unique<ActionGraph::Node>(*this);
@@ -107,8 +104,7 @@ vector< unique_ptr<ActionGraph::Node> > ActionGraph::Node::successors(const Fact
 			const size_t transport_line_idx = edgetable[i];
 			const auto& transport_line = factory->transport_lines[transport_line_idx];
 
-			//if ( (edge.actual_flow == edge.capacity) && // an edge is at max capacity
-			if ( (edge.actual_flow >= edge.capacity-EPSILON) && // an edge is at max capacity
+			if ( (edge.actual_flow >= edge.capacity) && // an edge is at max capacity
 				conf.transport_levels[transport_line_idx]+1 < transport_line.upgrade_plan.size() ) // and we can actually upgrade the edge
 			{
 				auto nodeptr = make_unique<ActionGraph::Node>(*this);

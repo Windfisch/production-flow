@@ -170,12 +170,12 @@ FlowGraph Factory::build_flowgraph(item_t item, const Factory::FactoryConfigurat
 	{
 		const auto& facility = facilities[facility_index];
 		size_t level = conf.facility_levels[facility_index];
-		double production_rate;
+		int production_rate;
 		auto iter = facility.upgrade_plan[level].production_or_consumption.find(item);
 		if (iter != facility.upgrade_plan[level].production_or_consumption.end())
 			production_rate = iter->second;
 		else
-			production_rate = 0.;
+			production_rate = 0;
 
 		flowgraph.nodes.emplace_back(production_rate);
 	}
@@ -186,7 +186,7 @@ FlowGraph Factory::build_flowgraph(item_t item, const Factory::FactoryConfigurat
 		const auto& edge = transport_lines[edge_table[edge_index]];
 		assert(edge.item_type == item);
 		size_t level = conf.transport_levels[edge_table[edge_index]];
-		double capacity = edge.upgrade_plan[level].capacity;
+		int capacity = edge.upgrade_plan[level].capacity;
 	
 		flowgraph.edges.emplace_back(capacity);
 	}
@@ -227,7 +227,7 @@ void Factory::simulate_debug(const FactoryConfiguration& conf) const
 			if (node.max_production < 0 && -node.actual_production < -node.max_production)
 				unsatisfied = true;
 
-			if (node.max_production != 0.)
+			if (node.max_production != 0)
 				cout << item_name.at(item) << ":" << node.actual_production << "/" << node.max_production << ", ";
 		}
 		cout << "\"";

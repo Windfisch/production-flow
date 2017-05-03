@@ -11,8 +11,6 @@
 
 using namespace std;
 
-constexpr double EPSILON=0.001;
-
 template <typename T>
 std::string str(const T a_value, const int n = 3)
 {
@@ -21,9 +19,9 @@ std::string str(const T a_value, const int n = 3)
 	return out.str();
 }
 
-double FlowGraph::Node::incoming() const
+int FlowGraph::Node::incoming() const
 {
-	double result = 0.;
+	int result = 0;
 
 	for (Edge* edge : incoming_edges)
 		result += edge->actual_flow;
@@ -31,9 +29,9 @@ double FlowGraph::Node::incoming() const
 	return result;
 }
 
-double FlowGraph::Node::available() const // amount available for pushing out
+int FlowGraph::Node::available() const // amount available for pushing out
 {
-	return max(0., incoming() + actual_production);
+	return max(0, incoming() + actual_production);
 }
 
 
@@ -42,24 +40,24 @@ double FlowGraph::Node::available() const // amount available for pushing out
 // updates edge.actual_flow and node.excess (and dependent: node.available(), incoming())
 void FlowGraph::Node::update_forward()
 {
-	if (max_production > 0.)
+	if (max_production > 0)
 		actual_production = max_production;
 	else
 		actual_production = -min(incoming(), -max_production); // never consume more than incoming
 	
-	multimap<double, Edge*> sorted_edges;
+	multimap<int, Edge*> sorted_edges;
 	for (Edge* edge : outgoing_edges)
-		sorted_edges.insert( std::pair<double, Edge*>(edge->actual_capacity, edge) );
+		sorted_edges.insert( std::pair<int, Edge*>(edge->actual_capacity, edge) );
 
 	size_t edges_remaining = sorted_edges.size();
-	double amount_remaining = available();
+	int amount_remaining = available();
 
 	for (auto& it : sorted_edges)
 	{
 		Edge* edge = it.second;
 		auto capacity = it.first;
 
-		double fair_share = amount_remaining / edges_remaining;
+		int fair_share = amount_remaining / edges_remaining; // beware: integer division!
 		if (fair_share < capacity)
 			edge->actual_flow = fair_share;
 		else
@@ -69,21 +67,21 @@ void FlowGraph::Node::update_forward()
 			edges_remaining--;
 		}
 
-		assert(amount_remaining >= 0.);
+		assert(amount_remaining >= 0);
 	}
 
 	if (edges_remaining == 0)
 	{
 		excess = amount_remaining;
-		if (actual_production > 0.)
+		if (actual_production > 0)
 		{
-			double reduction = min(excess, actual_production);
+			int reduction = min(excess, actual_production);
 			actual_production -= reduction;
 			excess -= reduction;
 		}
 	}
 	else
-		excess = 0.;
+		excess = 0;
 }
 
 // from sinks to sources, propagate any excess which we could neither handle now push out.
@@ -92,24 +90,24 @@ void FlowGraph::Node::update_forward()
 // updates edge.actual_capacity.
 void FlowGraph::Node::update_backward()
 {
-	if (excess <= 0.)
+	if (excess <= 0)
 		return;
 
-	double amount = incoming() - excess;
+	int amount = incoming() - excess;
 
-	multimap<double, Edge*> sorted_edges;
+	multimap<int, Edge*> sorted_edges;
 	for (Edge* edge : incoming_edges)
-		sorted_edges.insert( std::pair<double, Edge*>(edge->actual_flow, edge) );
+		sorted_edges.insert( std::pair<int, Edge*>(edge->actual_flow, edge) );
 
 	size_t edges_remaining = sorted_edges.size();
-	double amount_remaining = amount;
+	int amount_remaining = amount;
 
 	for (auto& it : sorted_edges)
 	{
 		Edge* edge = it.second;
 		auto capacity = it.first;
 
-		double fair_share = amount_remaining / edges_remaining;
+		int fair_share = amount_remaining / edges_remaining; // beware: integer division
 		if (fair_share < capacity)
 			edge->actual_capacity = fair_share;
 		else
@@ -119,7 +117,7 @@ void FlowGraph::Node::update_backward()
 			edges_remaining--;
 		}
 
-		assert(amount_remaining >= 0.);
+		assert(amount_remaining >= 0);
 	}
 
 	assert(edges_remaining > 0);
@@ -142,8 +140,7 @@ void FlowGraph::calculate()
 
 		done = true;
 		for (auto& node : nodes)
-			//if (node.excess > 0.)
-			if (node.excess > 0. + EPSILON)
+			if (node.excess > 0)
 				done = false;
 
 		//dump("it"+to_string(i)+".5");

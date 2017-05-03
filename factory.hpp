@@ -33,7 +33,7 @@ struct Factory
 {
 	struct FacilityConfiguration
 	{
-		std::map<item_t, double> production_or_consumption;
+		std::map<item_t, int> production_or_consumption;
 		double incremental_cost; // cost for upgrading from one level lower to this one.
 		// more data goes here. possibly as a pointer for efficiency
 	};
@@ -45,7 +45,7 @@ struct Factory
 		{
 			for (const auto& conf : upgrade_plan)
 				for (const auto& itemprod : conf.production_or_consumption)
-					if (itemprod.second != 0.)
+					if (itemprod.second != 0)
 						items.insert(itemprod.first);
 		}
 
@@ -58,7 +58,7 @@ struct Factory
 
 	struct TransportLineConfiguration
 	{
-		double capacity;
+		int capacity;
 		double incremental_cost;
 		// more data goes here.
 	};

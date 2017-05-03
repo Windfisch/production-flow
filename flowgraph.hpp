@@ -8,28 +8,28 @@ struct FlowGraph
 
 	struct Edge
 	{
-		Edge(double cap) : capacity(cap), actual_capacity(cap) {}
+		Edge(int cap) : capacity(cap), actual_capacity(cap) {}
 
-		double capacity;
-		double actual_capacity;
-		double actual_flow = 0.;
+		int capacity;
+		int actual_capacity;
+		int actual_flow = 0;
 
 		std::string label() const;
 	};
 
 	struct Node
 	{
-		Node(double max_prod) : max_production(max_prod) {}
+		Node(int max_prod) : max_production(max_prod) {}
 
-		double max_production; // negative production = consumption, zero = splitter
-		double actual_production = 0.;
-		double excess = 0.;
+		int max_production; // negative production = consumption, zero = splitter
+		int actual_production = 0;
+		int excess = 0;
 
 		std::vector<Edge*> incoming_edges;
 		std::vector<Edge*> outgoing_edges; // max capacity on outgoing = splitter speed.
 
-		double incoming() const;
-		double available() const; // amount available for pushing out
+		int incoming() const;
+		int available() const; // amount available for pushing out
 		void update_forward();
 		void update_backward();
 

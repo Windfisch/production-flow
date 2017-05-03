@@ -9,7 +9,9 @@
 
 using namespace std;
 
-static map<string, map<item_t, double>> recipes = {
+constexpr int SCALING_FACTOR = 1000;
+
+static map<string, map<item_t, double>> recipes = { // FIXME: this is a misnomer
 	{"coal", {{COAL,1}}},
 	{"iron-ore", {{IRON_ORE,1}}},
 	{"iron-plate", {{IRON_PLATE,1}, {IRON_ORE,-1}, {COAL, -0.2}}},
@@ -62,7 +64,7 @@ Factory read_factory(string file)
 		{
 			vector<Factory::FacilityConfiguration> upgrade_plan;
 			Factory::FacilityConfiguration conf;
-			upgrade_plan.push_back(conf);
+			upgrade_plan.push_back(conf); // push an empty configuration. this is a splitter node
 
 			factory.facilities.emplace_back(upgrade_plan);
 		}
@@ -89,7 +91,7 @@ Factory read_factory(string file)
 				Factory::FacilityConfiguration conf;
 				
 				for (auto iter : recipes.at(recipe))
-					conf.production_or_consumption[iter.first] = iter.second * (current + (maximum-current)*i/5.);
+					conf.production_or_consumption[iter.first] = int(SCALING_FACTOR * iter.second * (current + (maximum-current)*i/5.));
 				upgrade_plan.push_back(conf);
 			}
 
@@ -124,12 +126,12 @@ Factory read_factory(string file)
 
 		vector<Factory::TransportLineConfiguration> upgrade_plan;
 
-		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{1*13.3, dist}); // one yellow
-		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{2*13.3, dist}); // two yellow
-		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{3*13.3, 4*dist}); // red+yellow
-		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{4*13.3, 4*dist}); // red+red
-		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{5*13.3, 15*dist}); // blue+red
-		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{6*13.3, 15*dist}); // blue+blue
+		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{int(SCALING_FACTOR * 1*13.3), dist}); // one yellow
+		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{int(SCALING_FACTOR * 2*13.3), dist}); // two yellow
+		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{int(SCALING_FACTOR * 3*13.3), 4*dist}); // red+yellow
+		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{int(SCALING_FACTOR * 4*13.3), 4*dist}); // red+red
+		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{int(SCALING_FACTOR * 5*13.3), 15*dist}); // blue+red
+		upgrade_plan.emplace_back(Factory::TransportLineConfiguration{int(SCALING_FACTOR * 6*13.3), 15*dist}); // blue+blue
 
 		factory.transport_lines.emplace_back(item_lookup.at(item), from-1, to-1, upgrade_plan);
 	}
