@@ -176,3 +176,11 @@ Problems
   oil* for chemplants, but also chemplants supply *consumption of light oil* to
   the refineries in exchange. (Steam engines, which destroy the light oil, can
   supply this "consumption" as well.)
+- The algorithm complexity is exponential in the number of possible upgrades.
+  I hope that this will be fine, because that number will be quite small. If
+  this turns out to be a problem, we can use the following heuristic:
+  When at least **n** nodes in the action graph with *current-item-level* **L**
+  have already been explored, then we strip all nodes with a level greater than
+  **L+2** (or any other positive number) from the openlist. We no longer can
+  guarantee to find the optimal solution then, but it's probably still quite
+  good.
