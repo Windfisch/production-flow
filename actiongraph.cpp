@@ -57,12 +57,15 @@ vector< unique_ptr<ActionGraph::Node> > ActionGraph::Node::successors(const Fact
 
 	for (int type = current_item_type+1; type < item_t::MAX_ITEM; type++)
 	{
+		cout << "checking assertion for itemtype " << type << endl;
 		FlowGraph flow = factory->build_flowgraph(item_t(type), conf);
 		flow.calculate();
 		assert(flow.is_valid());
 	}
+	cout << "done with assertion-checking" << endl;
 	#endif
 	
+	cout << "simulating flow for current item type " << current_item_type << endl;
 	// construct and simulate flow graph for current_item_type
 	FlowGraph flow = factory->build_flowgraph(current_item_type, conf);
 	flow.calculate();
@@ -153,7 +156,7 @@ pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::Facto
 		*smallest = move(openlist.back());
 		openlist.pop_back();
 
-		cout << "item: " << nodeptr->current_item_type << ", ";
+		cout << "inspecting item: " << nodeptr->current_item_type << ", ";
 		cout << "nodes:";
 		for (auto lvl : nodeptr->conf.facility_levels)
 			cout << " " << lvl;
@@ -167,18 +170,17 @@ pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::Facto
 		auto successor_nodes = nodeptr->successors(factory);
 		for (auto& successor : successor_nodes)
 		{
-			cout << "  ITEM: " << successor->current_item_type << ", ";
+			cout << "  -> successor item: " << successor->current_item_type << ", ";
 			cout << "nodes:";
 			for (auto lvl : successor->conf.facility_levels)
 				cout << " " << lvl;
 			cout << ", edges:";
 			for (auto lvl : successor->conf.transport_levels)
 				cout << " " << lvl;
-			cout << endl;
 			if (successor->current_item_type == DONE)
 			{
 				// we've found a goal state! :)
-				cout << "success, cost = " << successor->total_cost << ", expanded " << closedlist.size() + openlist.size() << " nodes" << endl;
+				cout << endl << "success, cost = " << successor->total_cost << ", expanded " << closedlist.size() + openlist.size() << " nodes" << endl;
 				return pair<Factory::FactoryConfiguration, double>(successor->conf, successor->total_cost);
 			}
 
@@ -187,6 +189,7 @@ pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::Facto
 				if (openlist_node->equals(*successor, factory))
 				{
 					openlist_node = move(successor);
+					cout << "; already in openlist" << endl;
 					found = true;
 					break;
 				}
@@ -195,11 +198,15 @@ pair<Factory::FactoryConfiguration, double> ActionGraph::dijkstra(Factory::Facto
 					if (closedlist_node->equals(*successor, factory))
 					{
 						found = true;
+						cout << "; already in closedlist" << endl;
 						break;
 					}
 
 			if (!found)
+			{
 				openlist.push_back(move(successor));
+				cout << "; not seen yet, adding to openlist" << endl;
+			}
 		}
 	}
 
